@@ -14,7 +14,25 @@ config = AuthXConfig(
 auth = AuthX(config)
 
 
-def get_current_user_id(token: TokenPayload = Depends(auth.access_token_required)) -> int:
+async def get_optional_token(request: Request) -> Optional[TokenPayload]:
+    """Возвращает токен если есть, иначе None"""
+    try:
+        return await auth.access_token_required(request)
+    except HTTPException:
+        return None
+    except Exception:
+        return None
+
+
+def get_current_user_id(token: Optional[TokenPayload] = Depends(get_optional_token)) -> int:
+    if token is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    # Обработка токена
     sub = getattr(token, "sub", None) or getattr(token, "subject", None)
     if sub is None and isinstance(token, dict):
         sub = token.get("sub") or token.get("subject")
