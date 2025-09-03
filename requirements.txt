@@ -1,0 +1,11 @@
+fastapi
+uvicorn[standard]
+gunicorn
+SQLAlchemy
+pydantic
+pydantic-settings
+asyncmy
+passlib[bcrypt]
+alembic
+authx
+pymysql
